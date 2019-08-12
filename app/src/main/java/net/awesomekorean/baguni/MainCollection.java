@@ -15,12 +15,20 @@ import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.ListView;
 
+import com.opencsv.CSVReader;
+
 import net.awesomekorean.baguni.collection.CollectionDb;
 import net.awesomekorean.baguni.collection.CollectionFlashCard;
 import net.awesomekorean.baguni.collection.CollectionItems;
 import net.awesomekorean.baguni.collection.CollectionListViewAdapter;
 import net.awesomekorean.baguni.lesson.LessonFrame;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 
 public class MainCollection extends Fragment implements Button.OnClickListener{
@@ -30,7 +38,7 @@ public class MainCollection extends Fragment implements Button.OnClickListener{
     CheckBox selectAll;
 
     ListView listView;
-    ArrayList<CollectionItems> list;
+    ArrayList<CollectionItems> list = new ArrayList<>();
     CollectionListViewAdapter adapter;
 
     Button btnWord;
@@ -72,7 +80,8 @@ public class MainCollection extends Fragment implements Button.OnClickListener{
         btnAdd.setOnClickListener(this);
 
         listView = view.findViewById(R.id.listViewCollection);
-        list = getCollection(false);
+        getCollections();
+        //list = getCollection(false);
         adapter = new CollectionListViewAdapter(getContext(), list);
 
         listView.setAdapter(adapter);
@@ -117,6 +126,35 @@ public class MainCollection extends Fragment implements Button.OnClickListener{
 
 
         return view;
+    }
+
+    public void getCollections() {
+
+        InputStreamReader input = new InputStreamReader(getResources().openRawResource(R.raw.collections));
+        BufferedReader fileReader = new BufferedReader(input);
+
+
+        try {
+            CSVReader reader = new CSVReader(fileReader);
+            String[] nextLine;
+
+            while ((nextLine = reader.readNext()) != null) {
+
+                String front = nextLine[0];
+                String back = nextLine[1];
+
+                CollectionItems items = new CollectionItems();
+                items.setCollectionKorean(front);
+                items.setCollectionEnglish(back);
+
+                list.add(items);
+
+            }
+        } catch (FileNotFoundException e) {
+            System.out.println("Can't find file");
+        } catch (IOException e) {
+            System.out.println("Can't read line");
+        }
     }
 
     private ArrayList<CollectionItems> getCollection(boolean isChecked) {
